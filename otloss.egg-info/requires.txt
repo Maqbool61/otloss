@@ -1,0 +1,12 @@
+torch>=2.0.0
+
+[dev]
+pytest>=7.0
+pytest-cov
+black
+ruff
+mypy
+
+[examples]
+matplotlib>=3.5
+numpy>=1.22

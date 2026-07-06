@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "otloss"
+version = "0.1.0"
+description = "Optimal Transport training objectives for PyTorch — drop-in replacement for cross-entropy and MSE"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Maqbool61" }]
+keywords = [
+    "deep-learning", "pytorch", "optimal-transport",
+    "wasserstein", "generative-models", "loss-function",
+    "machine-learning", "calibration"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "torch>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "black",
+    "ruff",
+    "mypy",
+]
+examples = [
+    "matplotlib>=3.5",
+    "numpy>=1.22",
+]
+
+[project.urls]
+Homepage = "https://github.com/Maqbool61/otloss"
+Repository = "https://github.com/Maqbool61/otloss"
+Issues = "https://github.com/Maqbool61/otloss/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["otloss*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true

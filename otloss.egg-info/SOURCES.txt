@@ -1,0 +1,14 @@
+LICENSE
+README.md
+pyproject.toml
+otloss/__init__.py
+otloss/distributions.py
+otloss/functional.py
+otloss/losses.py
+otloss/utils.py
+otloss.egg-info/PKG-INFO
+otloss.egg-info/SOURCES.txt
+otloss.egg-info/dependency_links.txt
+otloss.egg-info/requires.txt
+otloss.egg-info/top_level.txt
+tests/test_wasserstein.py
