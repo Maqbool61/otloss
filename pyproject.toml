@@ -1,14 +1,14 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "otloss"
 version = "0.1.0"
 description = "Optimal Transport training objectives for PyTorch — drop-in replacement for cross-entropy and MSE"
 readme = "README.md"
-license = "MIT"
-authors = [{ name = "Maqbool61", email = "xmac484@gmail.com" }]
+license = { text = "MIT" }
+authors = [{ name = "Maqbool61" }]
 keywords = [
     "deep-learning", "pytorch", "optimal-transport",
     "wasserstein", "generative-models", "loss-function",
@@ -17,6 +17,7 @@ keywords = [
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -46,9 +47,8 @@ Homepage = "https://github.com/Maqbool61/otloss"
 Repository = "https://github.com/Maqbool61/otloss"
 Issues = "https://github.com/Maqbool61/otloss/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["otloss*"]
+[tool.hatch.build.targets.wheel]
+packages = ["otloss"]
 
 [tool.black]
 line-length = 88
