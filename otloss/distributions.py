@@ -76,23 +76,19 @@ def gaussian_mixture_weights(
         component_weights = component_weights / component_weights.sum()
 
     # Sample component assignments
-    assignments = torch.multinomial(
-        component_weights, n_samples, replacement=True
-    )
+    assignments = torch.multinomial(component_weights, n_samples, replacement=True)
 
     # Sample from chosen components
-    selected_means = means[assignments]        # (n_samples, D)
+    selected_means = means[assignments]  # (n_samples, D)
     if stds.dim() == 1:
-        selected_stds = stds[assignments].unsqueeze(-1)   # (n_samples, 1)
+        selected_stds = stds[assignments].unsqueeze(-1)  # (n_samples, 1)
     else:
-        selected_stds = stds[assignments]     # (n_samples, D)
+        selected_stds = stds[assignments]  # (n_samples, D)
 
     noise = torch.randn_like(selected_means)
     samples = selected_means + selected_stds * noise
 
-    weights = uniform_weights(
-        n_samples, device=means.device, dtype=means.dtype
-    )
+    weights = uniform_weights(n_samples, device=means.device, dtype=means.dtype)
     return samples, weights
 
 
@@ -119,8 +115,10 @@ def label_smoothed_weights(
     """
     B = labels.shape[0]
     weights = torch.full(
-        (B, n_classes), smoothing / n_classes,
-        device=labels.device, dtype=torch.float32,
+        (B, n_classes),
+        smoothing / n_classes,
+        device=labels.device,
+        dtype=torch.float32,
     )
     weights.scatter_(1, labels.unsqueeze(1), 1.0 - smoothing + smoothing / n_classes)
     return weights

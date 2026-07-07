@@ -25,10 +25,10 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 
-
 # ---------------------------------------------------------------------------
 # Low-level primitives
 # ---------------------------------------------------------------------------
+
 
 def cost_matrix(
     x: Tensor,
@@ -59,10 +59,10 @@ def cost_matrix(
     B, N, D = x.shape
     _, M, _ = y.shape
 
-    x_exp = x.unsqueeze(2)   # (B, N, 1, D)
-    y_exp = y.unsqueeze(1)   # (B, 1, M, D)
-    diff = x_exp - y_exp     # (B, N, M, D)
-    C = (diff ** 2).sum(-1)  # (B, N, M)  squared Euclidean
+    x_exp = x.unsqueeze(2)  # (B, N, 1, D)
+    y_exp = y.unsqueeze(1)  # (B, 1, M, D)
+    diff = x_exp - y_exp  # (B, N, M, D)
+    C = (diff**2).sum(-1)  # (B, N, M)  squared Euclidean
 
     if p != 2:
         C = C.clamp(min=0) ** (p / 2)
@@ -85,28 +85,28 @@ def _sinkhorn_core(
     Inputs must be batched: a (B,N), b (B,M), C (B,N,M).
     Returns f (B,N), g (B,M), cost (B,).
     """
-    eps = blur ** 2
+    eps = blur**2
     log_a = a.clamp(min=1e-38).log()
     log_b = b.clamp(min=1e-38).log()
 
-    f = torch.zeros_like(a)   # (B, N)
-    g = torch.zeros_like(b)   # (B, M)
+    f = torch.zeros_like(a)  # (B, N)
+    g = torch.zeros_like(b)  # (B, M)
 
     for _ in range(max_iter):
         f_prev = f
 
         # f update
-        kernel = (g.unsqueeze(1) - C) / eps   # (B, N, M)
+        kernel = (g.unsqueeze(1) - C) / eps  # (B, N, M)
         f = eps * (log_a - torch.logsumexp(kernel, dim=2))
 
         # g update
-        kernel = (f.unsqueeze(2) - C) / eps   # (B, N, M)
+        kernel = (f.unsqueeze(2) - C) / eps  # (B, N, M)
         g = eps * (log_b - torch.logsumexp(kernel, dim=1))
 
         if (f - f_prev).abs().max().item() < tol:
             break
 
-    cost = (f * a).sum(-1) + (g * b).sum(-1)   # (B,)
+    cost = (f * a).sum(-1) + (g * b).sum(-1)  # (B,)
     return f, g, cost
 
 
@@ -198,6 +198,7 @@ def dual_variables(
 # Mid-level functional losses  (debiasing done correctly with supports)
 # ---------------------------------------------------------------------------
 
+
 def otloss(
     pred: Tensor,
     target: Tensor,
@@ -252,11 +253,11 @@ def otloss(
         target_weights = target_weights.unsqueeze(0).expand(B, -1).contiguous()
 
     # Cost matrices — build all three up front (supports are available here)
-    C_xy = cost_matrix(pred, target, p=p)           # (B, N, M)
+    C_xy = cost_matrix(pred, target, p=p)  # (B, N, M)
 
     if debias:
-        C_xx = cost_matrix(pred, pred, p=p)         # (B, N, N)
-        C_yy = cost_matrix(target, target, p=p)     # (B, M, M)
+        C_xx = cost_matrix(pred, pred, p=p)  # (B, N, N)
+        C_yy = cost_matrix(target, target, p=p)  # (B, M, M)
 
     # Blur annealing schedule: coarse → fine
     blurs = _blur_schedule(blur, scaling, n_steps=5)
@@ -267,13 +268,16 @@ def otloss(
         cost_yy = target_weights.new_zeros(B)
 
     for b_val in blurs:
-        _, _, cost_xy = _sinkhorn_core(pred_weights, target_weights, C_xy,
-                                        b_val, max_iter, tol=1e-6)
+        _, _, cost_xy = _sinkhorn_core(
+            pred_weights, target_weights, C_xy, b_val, max_iter, tol=1e-6
+        )
         if debias:
-            _, _, cost_xx = _sinkhorn_core(pred_weights, pred_weights, C_xx,
-                                            b_val, max_iter, tol=1e-6)
-            _, _, cost_yy = _sinkhorn_core(target_weights, target_weights, C_yy,
-                                            b_val, max_iter, tol=1e-6)
+            _, _, cost_xx = _sinkhorn_core(
+                pred_weights, pred_weights, C_xx, b_val, max_iter, tol=1e-6
+            )
+            _, _, cost_yy = _sinkhorn_core(
+                target_weights, target_weights, C_yy, b_val, max_iter, tol=1e-6
+            )
 
     if debias:
         cost = (cost_xy - 0.5 * cost_xx - 0.5 * cost_yy).clamp(min=0)
@@ -333,25 +337,29 @@ def sliced_otloss(
     directions = torch.randn(n_projections, D, device=pred.device, dtype=pred.dtype)
     directions = F.normalize(directions, dim=-1)
 
-    pred_proj   = pred   @ directions.T    # (B, N, n_proj)
-    target_proj = target @ directions.T    # (B, M, n_proj)
+    pred_proj = pred @ directions.T  # (B, N, n_proj)
+    target_proj = target @ directions.T  # (B, M, n_proj)
 
-    pred_sorted   = pred_proj.sort(dim=1).values
+    pred_sorted = pred_proj.sort(dim=1).values
     target_sorted = target_proj.sort(dim=1).values
 
     if N != M:
         common = max(N, M)
         pred_sorted = F.interpolate(
-            pred_sorted.permute(0, 2, 1), size=common,
-            mode="linear", align_corners=True,
+            pred_sorted.permute(0, 2, 1),
+            size=common,
+            mode="linear",
+            align_corners=True,
         ).permute(0, 2, 1)
         target_sorted = F.interpolate(
-            target_sorted.permute(0, 2, 1), size=common,
-            mode="linear", align_corners=True,
+            target_sorted.permute(0, 2, 1),
+            size=common,
+            mode="linear",
+            align_corners=True,
         ).permute(0, 2, 1)
 
     diff = (pred_sorted - target_sorted).abs() ** p
-    swd  = diff.mean(dim=(1, 2)) ** (1.0 / p)
+    swd = diff.mean(dim=(1, 2)) ** (1.0 / p)
 
     if squeeze:
         return swd.squeeze(0)
@@ -367,10 +375,11 @@ def sliced_otloss(
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _blur_schedule(blur: float, scaling: float, n_steps: int) -> list:
     """Geometric annealing schedule from coarse to fine blur."""
-    start = blur / (scaling ** n_steps)
-    return [start * (scaling ** i) for i in range(n_steps + 1)]
+    start = blur / (scaling**n_steps)
+    return [start * (scaling**i) for i in range(n_steps + 1)]
 
 
 def uniform_weights(

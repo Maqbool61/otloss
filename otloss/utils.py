@@ -126,7 +126,7 @@ def transport_plan(
     -------
     P : Tensor  shape (N, M)  soft transport plan
     """
-    eps = blur ** 2
+    eps = blur**2
     log_P = (f.unsqueeze(1) + g.unsqueeze(0) - C) / eps
     return log_P.exp()
 

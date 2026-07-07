@@ -21,15 +21,15 @@ from otloss import (
 )
 from otloss.losses import WassersteinGANLoss
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def simple_1d():
     """Two 1-D distributions separated by a known distance."""
-    pred   = torch.zeros(50, 1)
+    pred = torch.zeros(50, 1)
     target = torch.ones(50, 1)
     return pred, target
 
@@ -37,7 +37,7 @@ def simple_1d():
 @pytest.fixture
 def batch_2d():
     torch.manual_seed(0)
-    pred   = torch.randn(4, 30, 2, requires_grad=True)
+    pred = torch.randn(4, 30, 2, requires_grad=True)
     target = torch.randn(4, 30, 2)
     return pred, target
 
@@ -45,6 +45,7 @@ def batch_2d():
 # ---------------------------------------------------------------------------
 # cost_matrix
 # ---------------------------------------------------------------------------
+
 
 class TestCostMatrix:
     def test_shape_unbatched(self):
@@ -81,6 +82,7 @@ class TestCostMatrix:
 # sinkhorn
 # ---------------------------------------------------------------------------
 
+
 class TestSinkhorn:
     def test_returns_positive_cost(self, simple_1d):
         pred, target = simple_1d
@@ -102,6 +104,7 @@ class TestSinkhorn:
     def test_marginal_consistency(self):
         """Transport plan rows/cols should sum to source/target weights."""
         from otloss.utils import transport_plan
+
         N, M, D = 20, 20, 2
         torch.manual_seed(1)
         x = torch.randn(N, D)
@@ -127,6 +130,7 @@ class TestSinkhorn:
 # ---------------------------------------------------------------------------
 # WassersteinLoss (nn.Module)
 # ---------------------------------------------------------------------------
+
 
 class TestWassersteinLoss:
     def test_scalar_output(self, batch_2d):
@@ -154,7 +158,7 @@ class TestWassersteinLoss:
         # debiased Sinkhorn divergence between well-separated 1-D clouds is > 0
         criterion = WassersteinLoss(blur=0.05, scaling=1.0, debias=True)
         loss = criterion(pred.unsqueeze(0), target.unsqueeze(0))
-        assert loss.item() >= 0   # non-negative by construction
+        assert loss.item() >= 0  # non-negative by construction
         # and strictly positive when distributions are far apart
         assert loss.item() > 1e-4, f"Expected positive loss, got {loss.item()}"
 
@@ -163,7 +167,7 @@ class TestWassersteinLoss:
         pred = pred.detach()
 
         mean_loss = WassersteinLoss(blur=0.1, reduction="mean")(pred, target)
-        sum_loss  = WassersteinLoss(blur=0.1, reduction="sum")(pred, target)
+        sum_loss = WassersteinLoss(blur=0.1, reduction="sum")(pred, target)
         none_loss = WassersteinLoss(blur=0.1, reduction="none")(pred, target)
 
         assert none_loss.shape == (4,)
@@ -171,7 +175,7 @@ class TestWassersteinLoss:
         assert mean_loss.item() == pytest.approx(none_loss.mean().item(), rel=1e-4)
 
     def test_unequal_sample_sizes(self):
-        pred   = torch.randn(2, 30, 3, requires_grad=True)
+        pred = torch.randn(2, 30, 3, requires_grad=True)
         target = torch.randn(2, 50, 3)
         criterion = WassersteinLoss(blur=0.1)
         loss = criterion(pred, target)
@@ -211,6 +215,7 @@ class TestWassersteinLoss:
 # SlicedWassersteinLoss
 # ---------------------------------------------------------------------------
 
+
 class TestSlicedWassersteinLoss:
     def test_scalar_output(self, batch_2d):
         pred, target = batch_2d
@@ -233,7 +238,7 @@ class TestSlicedWassersteinLoss:
         assert loss.item() < 0.05
 
     def test_large_scale(self):
-        pred   = torch.randn(2, 500, 64, requires_grad=True)
+        pred = torch.randn(2, 500, 64, requires_grad=True)
         target = torch.randn(2, 500, 64)
         criterion = SlicedWassersteinLoss(n_projections=200)
         loss = criterion(pred, target)
@@ -245,19 +250,21 @@ class TestSlicedWassersteinLoss:
 # WassersteinGANLoss
 # ---------------------------------------------------------------------------
 
+
 class TestWassersteinGANLoss:
     def test_critic_loss_sign(self):
         real_scores = torch.tensor([1.0, 0.9, 1.1])
         fake_scores = torch.tensor([0.1, -0.2, 0.0])
         criterion = WassersteinGANLoss()
         loss = criterion.critic_loss(real_scores, fake_scores)
-        assert loss.item() < 0   # critic should see negative loss when real > fake
+        assert loss.item() < 0  # critic should see negative loss when real > fake
 
     def test_gradient_penalty_positive(self):
         class DummyCritic(nn.Module):
             def __init__(self):
                 super().__init__()
                 self.fc = nn.Linear(4, 1)
+
             def forward(self, x):
                 return self.fc(x)
 
@@ -272,6 +279,7 @@ class TestWassersteinGANLoss:
 # ---------------------------------------------------------------------------
 # Utilities
 # ---------------------------------------------------------------------------
+
 
 class TestCalibrationError:
     def test_perfect_calibration(self):
@@ -297,6 +305,7 @@ class TestCalibrationError:
 # Integration: train a tiny model with WassersteinLoss
 # ---------------------------------------------------------------------------
 
+
 class TestIntegration:
     def test_model_trains(self):
         """Verify WassersteinLoss can train a simple mapping."""
@@ -308,11 +317,11 @@ class TestIntegration:
         criterion = WassersteinLoss(blur=0.1, debias=True, scaling=1.0)
 
         torch.manual_seed(0)
-        target = torch.randn(4, 50, 2) * 0.3 + 3.0   # shifted, small batch
+        target = torch.randn(4, 50, 2) * 0.3 + 3.0  # shifted, small batch
 
         losses = []
         for _ in range(50):
-            torch.manual_seed(_ )  # reproducible noise per step
+            torch.manual_seed(_)  # reproducible noise per step
             noise = torch.randn(4, 50, 8)
             pred = model(noise)
             loss = criterion(pred, target)
@@ -321,8 +330,8 @@ class TestIntegration:
             optimizer.step()
             losses.append(loss.item())
 
-        first_half  = sum(losses[:10]) / 10
+        first_half = sum(losses[:10]) / 10
         second_half = sum(losses[40:]) / 10
-        assert second_half < first_half, (
-            f"Loss did not decrease: first={first_half:.4f}, last={second_half:.4f}"
-        )
+        assert (
+            second_half < first_half
+        ), f"Loss did not decrease: first={first_half:.4f}, last={second_half:.4f}"
