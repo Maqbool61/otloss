@@ -1,19 +1,20 @@
 """
-Run all 5 comparisons and print a final leaderboard.
+Run all 6 comparisons and print a final leaderboard.
 Usage: python run_all.py
 """
 import subprocess, sys, time
 
 scripts = [
-    ("01_gan_comparison.py",         "GAN — Mode Collapse"),
-    ("02_calibration_comparison.py", "Classifier Calibration (ECE)"),
-    ("03_convergence_comparison.py", "Distribution Matching"),
-    ("04_rlhf_reward_comparison.py", "RLHF Reward Model"),
-    ("05_molecule_comparison.py",    "Molecule Generation"),
+    ("01_gan_comparison.py",                  "GAN — Mode Collapse"),
+    ("02_calibration_comparison.py",          "Classifier Calibration (ECE)"),
+    ("03_convergence_comparison.py",          "Distribution Matching"),
+    ("04_rlhf_reward_comparison.py",          "RLHF Reward Model"),
+    ("05_molecule_comparison.py",             "Molecule Generation"),
+    ("06_financial_timeseries_comparison.py", "Financial Time-Series (Fat Tails)"),
 ]
 
 print("\n" + "="*60)
-print("  otloss vs Baseline — running all 5 comparisons")
+print("  otloss vs Baseline — running all 6 comparisons")
 print("="*60)
 
 for script, name in scripts:
