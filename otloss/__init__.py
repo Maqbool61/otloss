@@ -27,7 +27,7 @@ from .distributions import (
     empirical_distribution,
     gaussian_mixture_weights,
 )
-from .utils import calibration_error, frechet_distance
+from .utils import calibration_error, frechet_distance, transport_plan, wasserstein_barycenter_weights
 
 __version__ = "0.1.0"
 __author__ = "Maqbool61"
@@ -50,4 +50,7 @@ __all__ = [
     # Diagnostics
     "calibration_error",
     "frechet_distance",
+    # Transport utilities
+    "transport_plan",
+    "wasserstein_barycenter_weights",
 ]

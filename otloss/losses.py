@@ -21,8 +21,8 @@ from torch import Tensor
 from .functional import (
     otloss,
     sliced_otloss,
-    uniform_weights,
 )
+from .distributions import uniform_weights
 
 
 class WassersteinLoss(nn.Module):
