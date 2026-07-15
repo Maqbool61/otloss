@@ -24,6 +24,7 @@ from typing import Optional, Tuple
 import torch
 import torch.nn.functional as F
 from torch import Tensor
+from .distributions import uniform_weights
 
 # ---------------------------------------------------------------------------
 # Low-level primitives
@@ -284,14 +285,12 @@ def otloss(
     else:
         cost = cost_xy
 
-    if squeeze:
-        return cost.squeeze(0)
-
     if reduction == "mean":
-        return cost.mean()
+        cost = cost.mean()
     elif reduction == "sum":
-        return cost.sum()
-    return cost
+        cost = cost.sum()
+
+    return cost.squeeze(0) if squeeze else cost
 
 
 def sliced_otloss(
@@ -361,14 +360,12 @@ def sliced_otloss(
     diff = (pred_sorted - target_sorted).abs() ** p
     swd = diff.mean(dim=(1, 2)) ** (1.0 / p)
 
-    if squeeze:
-        return swd.squeeze(0)
-
     if reduction == "mean":
-        return swd.mean()
+        swd = swd.mean()
     elif reduction == "sum":
-        return swd.sum()
-    return swd
+        swd = swd.sum()
+
+    return swd.squeeze(0) if squeeze else swd
 
 
 # ---------------------------------------------------------------------------
@@ -382,12 +379,4 @@ def _blur_schedule(blur: float, scaling: float, n_steps: int) -> list:
     return [start * (scaling**i) for i in range(n_steps + 1)]
 
 
-def uniform_weights(
-    n: int,
-    batch: int = 1,
-    device=None,
-    dtype: torch.dtype = torch.float32,
-) -> Tensor:
-    """Uniform probability weights summing to 1, shape (n,) or (batch, n)."""
-    w = torch.full((batch, n), 1.0 / n, device=device, dtype=dtype)
-    return w.squeeze(0) if batch == 1 else w
+
